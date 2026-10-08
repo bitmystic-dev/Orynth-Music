@@ -1,0 +1,65 @@
+name: Build OrbyteTune Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Release APK (ARM64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate translation contributor credits
+        run: |
+          if [ -f "scripts/generate_translation_contributors.py" ]; then
+            python scripts/generate_translation_contributors.py
+          fi
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set Up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-cleanup: on-success
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleFossMobileUniversalRelease
+        env:
+          PULL_REQUEST: 'false'
+
+      - name: Sign APK
+        run: |
+          # Create a keystore on the fly
+          keytool -genkeypair -v -keystore release.jks -alias orbytetune -keyalg RSA -keysize 2048 -validity 10000 -storepass orbyte123 -keypass orbyte123 -dname "CN=OrbyteTune, O=Bitmystic, C=IN"
+          
+          # Locate the output APK
+          UNSIGNED_APK=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
+          
+          # Sign with build-tools
+          $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks release.jks --ks-key-alias orbytetune --ks-pass pass:orbyte123 --key-pass pass:orbyte123 --out OrbyteTune-Release.apk "$UNSIGNED_APK"
+
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrbyteTune-Release-Stab;e
+          path: OrbyteTune-Release-Stable.apk
