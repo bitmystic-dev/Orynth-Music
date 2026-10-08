@@ -1,4 +1,4 @@
-name: Build OrbyteTune Release
+name: Build OrbyteTune Release (Own Script FOSS Edition)
 
 on:
   workflow_dispatch:
