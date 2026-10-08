@@ -67,7 +67,7 @@ android {
     applicationId = "dev.bitmystic.orbytetune"
         minSdk = 26
         targetSdk = 37
-        versionCode = 142
+        versionCode = 143
         versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -114,11 +114,11 @@ android {
         val githubOwner =
             System.getenv("GITHUB_OWNER")?.trim()
                 ?: localProperties.getProperty("GITHUB_OWNER")?.trim()
-                ?: "rukamori"
+                ?: "bitmystic-dev"
         val githubRepo =
             System.getenv("GITHUB_REPO")?.trim()
                 ?: localProperties.getProperty("GITHUB_REPO")?.trim()
-                ?: "ArchiveTune"
+                ?: "OrbyteTune"
         buildConfigField("String", "GITHUB_OWNER", githubOwner.asBuildConfigString())
         buildConfigField("String", "GITHUB_REPO", githubRepo.asBuildConfigString())
         buildConfigField("boolean", "IS_NIGHTLY_BUILD", "false")
@@ -242,11 +242,11 @@ android {
             val nightlyReleaseOwner =
                 System.getenv("NIGHTLY_RELEASE_GITHUB_OWNER")?.trim()
                     ?: localProperties.getProperty("NIGHTLY_RELEASE_GITHUB_OWNER")?.trim()
-                    ?: "rukamori"
+                    ?: "bitmystic-dev"
             val nightlyReleaseRepo =
                 System.getenv("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
                     ?: localProperties.getProperty("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
-                    ?: "canary"
+                    ?: "OrbyteTune"
             buildConfigField("String", "RELEASE_GITHUB_OWNER", nightlyReleaseOwner.asBuildConfigString())
             buildConfigField("String", "RELEASE_GITHUB_REPO", nightlyReleaseRepo.asBuildConfigString())
         }
