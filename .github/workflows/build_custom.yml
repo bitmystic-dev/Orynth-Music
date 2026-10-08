@@ -55,11 +55,15 @@ jobs:
           # Locate the output APK
           UNSIGNED_APK=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
           
-          # Sign with build-tools
-          $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks release.jks --ks-key-alias orbytetune --ks-pass pass:orbyte123 --key-pass pass:orbyte123 --out OrbyteTune-Release.apk "$UNSIGNED_APK"
+          # Sign with build-tools (Output name must match the upload path below)
+          $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks release.jks --ks-key-alias orbytetune --ks-pass pass:orbyte123 --key-pass pass:orbyte123 --out OrbyteTune-Release-Stable.apk "$UNSIGNED_APK"
 
       - name: Upload Signed APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: OrbyteTune-Release
-          path: OrbyteTune-Release-Stable.apk
+          name: OrbyteTune-Build-Output
+          path: |
+            OrbyteTune-Release-Stable.apk
+            app/build/outputs/apk/**/*.apk
+            
