@@ -61,5 +61,5 @@ jobs:
       - name: Upload Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: OrbyteTune-Release-Stab;e
+          name: OrbyteTune-Release
           path: OrbyteTune-Release-Stable.apk
