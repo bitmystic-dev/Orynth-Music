@@ -64,11 +64,11 @@ android {
     compileSdkMinor = 2
 
     defaultConfig {
-    applicationId = "moe.rukamori.archivetune"
+    applicationId = "dev.bitmystic.orbytetune"
         minSdk = 26
         targetSdk = 37
         versionCode = 142
-        versionName = "15.1.0"
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
