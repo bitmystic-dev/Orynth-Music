@@ -1,10 +1,7 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<<<<<<< HEAD
     <string name="app_name" translatable="false">Orynth Music</string>
-=======
-    <string name="app_name" translatable="false">Orynth Music</string>
->>>>>>> 2dd1103f7c747e0ea358dbb69d9326c95f6e1387
     <string name="widget_description">Shows currently playing track with playback controls</string>
     <string name="widget_album_art_description">Album art widget with floating playback controls</string>
     <string name="widget_now_playing_card_description">Now playing card with artwork, progress, and playback controls</string>
