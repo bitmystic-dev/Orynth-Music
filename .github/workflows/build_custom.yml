@@ -49,21 +49,20 @@ jobs:
 
       - name: Sign APK
         run: |
-          # Create a keystore on the fly
-          keytool -genkeypair -v -keystore release.jks -alias Orynth Music -keyalg RSA -keysize 2048 -validity 10000 -storepass orbyte123 -keypass orbyte123 -dname "CN=Orynth Music, O=Bitmystic, C=IN"
+          # Create a keystore on the fly (Alias combined to one word to prevent bash errors)
+          keytool -genkeypair -v -keystore release.jks -alias OrynthMusic -keyalg RSA -keysize 2048 -validity 10000 -storepass orbyte123 -keypass orbyte123 -dname "CN=Orynth Music, O=Bitmystic, C=IN"
           
           # Locate the output APK
           UNSIGNED_APK=$(find app/build/outputs/apk -name "*.apk" | head -n 1)
           
-          # Sign with build-tools (Output name must match the upload path below)
-          $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks release.jks --ks-key-alias Orynth Music --ks-pass pass:orbyte123 --key-pass pass:orbyte123 --out Orynth Music-Release-Stable.apk "$UNSIGNED_APK"
+          # Sign with build-tools (Output name hyphenated to prevent path errors)
+          $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks release.jks --ks-key-alias OrynthMusic --ks-pass pass:orbyte123 --key-pass pass:orbyte123 --out Orynth-Music-Release-Stable.apk "$UNSIGNED_APK"
 
       - name: Upload Signed APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Orynth Music-Build-Output
+          name: Orynth-Music-Build-Output
           path: |
-            Orynth Music-Release-Stable.apk
+            Orynth-Music-Release-Stable.apk
             app/build/outputs/apk/**/*.apk
-            
