@@ -64,7 +64,7 @@ android {
     compileSdkMinor = 2
 
     defaultConfig {
-    applicationId = "dev.bitmystic.orbytetune"
+    applicationId = "dev.bitmystic.orynthmusic"
         minSdk = 26
         targetSdk = 37
         versionCode = 143
@@ -118,7 +118,7 @@ android {
         val githubRepo =
             System.getenv("GITHUB_REPO")?.trim()
                 ?: localProperties.getProperty("GITHUB_REPO")?.trim()
-                ?: "OrbyteTune"
+                ?: "Orynth Music"
         buildConfigField("String", "GITHUB_OWNER", githubOwner.asBuildConfigString())
         buildConfigField("String", "GITHUB_REPO", githubRepo.asBuildConfigString())
         buildConfigField("boolean", "IS_NIGHTLY_BUILD", "false")
@@ -246,7 +246,7 @@ android {
             val nightlyReleaseRepo =
                 System.getenv("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
                     ?: localProperties.getProperty("NIGHTLY_RELEASE_GITHUB_REPO")?.trim()
-                    ?: "OrbyteTune"
+                    ?: "Orynth Music"
             buildConfigField("String", "RELEASE_GITHUB_OWNER", nightlyReleaseOwner.asBuildConfigString())
             buildConfigField("String", "RELEASE_GITHUB_REPO", nightlyReleaseRepo.asBuildConfigString())
         }
