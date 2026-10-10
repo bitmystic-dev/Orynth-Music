@@ -451,7 +451,7 @@ constructor(
                 ),
             leadDeveloper =
                 TeamMember(
-                    avatarUrl = "https://avatars.githubusercontent.com/bitmystic-dev.png",
+                    avatarUrl = "https://avatars.githubusercontent.com/u/165782791?s=400&u=5b800b008ed4001d68bd931ce420ec08d5279258&v=4",
                     name = "BitMystic",
                     positionResId = R.string.about_position_lead_dev,
                     profileUrl = "https://github.com/bitmystic-dev",
