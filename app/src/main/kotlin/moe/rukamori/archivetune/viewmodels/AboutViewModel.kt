@@ -1,9 +1,9 @@
 /*
- * ArchiveTune (2026)
- * © Rukamori — github.com/rukamori
- * GPL-3.0 License | Contributors: see git history
- * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
- */
+* ArchiveTune (2026)
+* © Rukamori — github.com/rukamori
+* GPL-3.0 License | Contributors: see git history
+* Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
+*/
 
 package moe.rukamori.archivetune.viewmodels
 
@@ -241,219 +241,332 @@ sealed interface AboutScreenEffect {
 
 @HiltViewModel
 class AboutViewModel
-    @Inject
-    constructor(
-        private val fetchAboutContributors: FetchAboutContributorsUseCase,
-        private val fetchTranslationContributors: FetchAboutTranslationContributorsUseCase,
-        private val fetchDependencyLicenses: FetchAboutDependencyLicensesUseCase,
-    ) : ViewModel() {
-        private val _state = MutableStateFlow<AboutScreenState>(AboutScreenState.Loading)
-        val state: StateFlow<AboutScreenState> = _state.asStateFlow()
+@Inject
+constructor(
+    private val fetchAboutContributors: FetchAboutContributorsUseCase,
+    private val fetchTranslationContributors: FetchAboutTranslationContributorsUseCase,
+    private val fetchDependencyLicenses: FetchAboutDependencyLicensesUseCase,
+) : ViewModel() {
+    private val _state = MutableStateFlow<AboutScreenState>(AboutScreenState.Loading)
+    val state: StateFlow<AboutScreenState> = _state.asStateFlow()
 
-        private val _effects = MutableSharedFlow<AboutScreenEffect>(extraBufferCapacity = 1)
-        val effects = _effects.asSharedFlow()
+    private val _effects = MutableSharedFlow<AboutScreenEffect>(extraBufferCapacity = 1)
+    val effects = _effects.asSharedFlow()
 
-        private var contributorsJob: Job? = null
-        private var translationContributorsJob: Job? = null
-        private var dependencyLicensesJob: Job? = null
-        private var contributorsState: AboutContributorsUiState = AboutContributorsUiState.Loading
-        private var translationContributorsState: AboutTranslationContributorsUiState =
-            AboutTranslationContributorsUiState.Loading
-        private var dependencyLicensesState: AboutDependencyLicensesUiState = AboutDependencyLicensesUiState.Loading
-        private var activeDialog = AboutDialog.NONE
+    private var contributorsJob: Job? = null
+    private var translationContributorsJob: Job? = null
+    private var dependencyLicensesJob: Job? = null
+    private var contributorsState: AboutContributorsUiState = AboutContributorsUiState.Loading
+    private var translationContributorsState: AboutTranslationContributorsUiState =
+        AboutTranslationContributorsUiState.Loading
+    private var dependencyLicensesState: AboutDependencyLicensesUiState = AboutDependencyLicensesUiState.Loading
+    private var activeDialog = AboutDialog.NONE
 
-        init {
-            loadContributors()
-        }
+    init {
+        loadContributors()
+    }
 
-        fun retryContributors() {
-            loadContributors(force = true)
-        }
+    fun retryContributors() {
+        loadContributors(force = true)
+    }
 
-        fun openTranslationContributors() {
-            activeDialog = AboutDialog.TRANSLATION_CONTRIBUTORS
-            updateState()
-            loadTranslationContributors()
-        }
+    fun openTranslationContributors() {
+        activeDialog = AboutDialog.TRANSLATION_CONTRIBUTORS
+        updateState()
+        loadTranslationContributors()
+    }
 
-        fun openDependencyLicenses() {
-            activeDialog = AboutDialog.DEPENDENCY_LICENSES
-            updateState()
-            loadDependencyLicenses()
-        }
+    fun openDependencyLicenses() {
+        activeDialog = AboutDialog.DEPENDENCY_LICENSES
+        updateState()
+        loadDependencyLicenses()
+    }
 
-        fun dismissDialog() {
-            activeDialog = AboutDialog.NONE
-            updateState()
-        }
+    fun dismissDialog() {
+        activeDialog = AboutDialog.NONE
+        updateState()
+    }
 
-        fun retryTranslationContributors() {
-            loadTranslationContributors(force = true)
-        }
+    fun retryTranslationContributors() {
+        loadTranslationContributors(force = true)
+    }
 
-        fun retryDependencyLicenses() {
-            loadDependencyLicenses(force = true)
-        }
+    fun retryDependencyLicenses() {
+        loadDependencyLicenses(force = true)
+    }
 
-        fun openUri(uri: String) {
-            if (uri.isBlank()) return
-            _effects.tryEmit(AboutScreenEffect.OpenUri(uri))
-        }
+    fun openUri(uri: String) {
+        if (uri.isBlank()) return
+        _effects.tryEmit(AboutScreenEffect.OpenUri(uri))
+    }
 
-        private fun loadContributors(force: Boolean = false) {
-            if (!force && contributorsJob?.isActive == true) return
-            contributorsJob?.cancel()
-            contributorsState = AboutContributorsUiState.Loading
-            updateState()
-            contributorsJob =
-                viewModelScope.launch {
-                    contributorsState =
-                        try {
-                            fetchAboutContributors()
-                                .fold(
-                                    onSuccess = { contributors ->
-                                        val contributorUiModels =
-                                            contributors
-                                                .take(MaxDisplayedContributors)
-                                                .toUiCollection()
-                                        if (contributorUiModels.isEmpty) {
-                                            AboutContributorsUiState.Empty
-                                        } else {
-                                            AboutContributorsUiState.Success(contributorUiModels)
-                                        }
-                                    },
-                                    onFailure = {
-                                        AboutContributorsUiState.Error(R.string.error_unknown)
-                                    },
-                                )
-                        } catch (throwable: Throwable) {
-                            if (throwable is CancellationException) throw throwable
-                            AboutContributorsUiState.Error(R.string.error_unknown)
-                        }
-                    updateState()
-                }
-        }
+    private fun loadContributors(force: Boolean = false) {
+        if (!force && contributorsJob?.isActive == true) return
+        contributorsJob?.cancel()
+        contributorsState = AboutContributorsUiState.Loading
+        updateState()
+        contributorsJob =
+            viewModelScope.launch {
+                contributorsState =
+                    try {
+                        fetchAboutContributors()
+                            .fold(
+                                onSuccess = { contributors ->
+                                    val contributorUiModels =
+                                        contributors
+                                            .take(MaxDisplayedContributors)
+                                            .toUiCollection()
+                                    if (contributorUiModels.isEmpty) {
+                                        AboutContributorsUiState.Empty
+                                    } else {
+                                        AboutContributorsUiState.Success(contributorUiModels)
+                                    }
+                                },
+                                onFailure = {
+                                    AboutContributorsUiState.Error(R.string.error_unknown)
+                                },
+                            )
+                    } catch (throwable: Throwable) {
+                        if (throwable is CancellationException) throw throwable
+                        AboutContributorsUiState.Error(R.string.error_unknown)
+                    }
+                updateState()
+            }
+    }
 
-        private fun loadTranslationContributors(force: Boolean = false) {
-            if (translationContributorsJob?.isActive == true) return
-            if (!force &&
-                (translationContributorsState is AboutTranslationContributorsUiState.Success ||
-                    translationContributorsState is AboutTranslationContributorsUiState.Empty)
-            ) return
-            translationContributorsState = AboutTranslationContributorsUiState.Loading
-            updateState()
-            translationContributorsJob =
-                viewModelScope.launch {
-                    translationContributorsState =
-                        try {
-                            fetchTranslationContributors()
-                                .fold(
-                                    onSuccess = { contributors ->
-                                        val contributorUiModels = contributors.toUiCollection()
-                                        if (contributorUiModels.isEmpty) {
-                                            AboutTranslationContributorsUiState.Empty
-                                        } else {
-                                            AboutTranslationContributorsUiState.Success(contributorUiModels)
-                                        }
-                                    },
-                                    onFailure = {
-                                        AboutTranslationContributorsUiState.Error(R.string.about_translation_contributors_error)
-                                    },
-                                )
-                        } catch (throwable: Throwable) {
-                            if (throwable is CancellationException) throw throwable
-                            AboutTranslationContributorsUiState.Error(R.string.about_translation_contributors_error)
-                        }
-                    updateState()
-                }
-        }
+    private fun loadTranslationContributors(force: Boolean = false) {
+        if (translationContributorsJob?.isActive == true) return
+        if (!force &&
+            (translationContributorsState is AboutTranslationContributorsUiState.Success ||
+                translationContributorsState is AboutTranslationContributorsUiState.Empty)
+        ) return
+        translationContributorsState = AboutTranslationContributorsUiState.Loading
+        updateState()
+        translationContributorsJob =
+            viewModelScope.launch {
+                translationContributorsState =
+                    try {
+                        fetchTranslationContributors()
+                            .fold(
+                                onSuccess = { contributors ->
+                                    val contributorUiModels = contributors.toUiCollection()
+                                    if (contributorUiModels.isEmpty) {
+                                        AboutTranslationContributorsUiState.Empty
+                                    } else {
+                                        AboutTranslationContributorsUiState.Success(contributorUiModels)
+                                    }
+                                },
+                                onFailure = {
+                                    AboutTranslationContributorsUiState.Error(R.string.about_translation_contributors_error)
+                                },
+                            )
+                    } catch (throwable: Throwable) {
+                        if (throwable is CancellationException) throw throwable
+                        AboutTranslationContributorsUiState.Error(R.string.about_translation_contributors_error)
+                    }
+                updateState()
+            }
+    }
 
-        private fun loadDependencyLicenses(force: Boolean = false) {
-            if (!force && dependencyLicensesJob?.isActive == true) return
-            if (!force && dependencyLicensesState is AboutDependencyLicensesUiState.Success) return
-            dependencyLicensesJob?.cancel()
-            dependencyLicensesState = AboutDependencyLicensesUiState.Loading
-            updateState()
-            dependencyLicensesJob =
-                viewModelScope.launch {
-                    dependencyLicensesState =
-                        try {
-                            fetchDependencyLicenses()
-                                .fold(
-                                    onSuccess = { licenses ->
-                                        val licenseUiModels = licenses.toUiCollection()
-                                        if (licenseUiModels.isEmpty) {
-                                            AboutDependencyLicensesUiState.Empty
-                                        } else {
-                                            AboutDependencyLicensesUiState.Success(licenseUiModels)
-                                        }
-                                    },
-                                    onFailure = {
-                                        AboutDependencyLicensesUiState.Error(R.string.error_unknown)
-                                    },
-                                )
-                        } catch (throwable: Throwable) {
-                            if (throwable is CancellationException) throw throwable
-                            AboutDependencyLicensesUiState.Error(R.string.error_unknown)
-                        }
-                    updateState()
-                }
-        }
+    private fun loadDependencyLicenses(force: Boolean = false) {
+        if (!force && dependencyLicensesJob?.isActive == true) return
+        if (!force && dependencyLicensesState is AboutDependencyLicensesUiState.Success) return
+        dependencyLicensesJob?.cancel()
+        dependencyLicensesState = AboutDependencyLicensesUiState.Loading
+        updateState()
+        dependencyLicensesJob =
+            viewModelScope.launch {
+                dependencyLicensesState =
+                    try {
+                        fetchDependencyLicenses()
+                            .fold(
+                                onSuccess = { licenses ->
+                                    val licenseUiModels = licenses.toUiCollection()
+                                    if (licenseUiModels.isEmpty) {
+                                        AboutDependencyLicensesUiState.Empty
+                                    } else {
+                                        AboutDependencyLicensesUiState.Success(licenseUiModels)
+                                    }
+                                },
+                                onFailure = {
+                                    AboutDependencyLicensesUiState.Error(R.string.error_unknown)
+                                },
+                            )
+                    } catch (throwable: Throwable) {
+                        if (throwable is CancellationException) throw throwable
+                        AboutDependencyLicensesUiState.Error(R.string.error_unknown)
+                    }
+                updateState()
+            }
+    }
 
-        private fun updateState() {
-            _state.value = AboutScreenState.Success(buildUiModel())
-        }
+    private fun updateState() {
+        _state.value = AboutScreenState.Success(buildUiModel())
+    }
 
-        private fun buildUiModel(): AboutUiModel =
-            AboutUiModel(
-                appNameResId = R.string.app_name,
-                versionName = BuildConfig.VERSION_NAME,
-                buildHash = currentBuildHash,
-                buildVariant = if (BuildConfig.DEBUG) DebugBuildBadge else BuildConfig.ARCHITECTURE.uppercase(),
-                primaryLinks =
-                    AboutLinkCollection.of(
-                        AboutLinkUiModel(
-                            id = "github",
-                            iconResId = R.drawable.github,
-                            labelResId = R.string.about_content_desc_github,
-                            url = "https://github.com/rukamori/ArchiveTune",
-                        ),
-                        AboutLinkUiModel(
-                            id = "website",
-                            iconResId = R.drawable.website,
-                            labelResId = R.string.about_content_desc_website,
-                            url = "https://archivetune.koiiverse.cloud",
-                        ),
-                        AboutLinkUiModel(
-                            id = "telegram",
-                            iconResId = R.drawable.telegram,
-                            labelResId = R.string.about_content_desc_telegram,
-                            url = "https://t.me/ArchiveTuneGC",
-                        ),
-                        AboutLinkUiModel(
-                            id = "donate",
-                            iconResId = R.drawable.coffee,
-                            labelResId = R.string.about_content_desc_donate,
-                            url = "https://koiiverse.cloud/donate",
-                        ),
-                        AboutLinkUiModel(
-                            id = "discord",
-                            iconResId = R.drawable.discord,
-                            labelResId = R.string.discord,
-                            url = "https://discord.gg/XF2fpb9rTq",
-                        ),
-                        AboutLinkUiModel(
-                            id = "privacy_policy",
-                            iconResId = R.drawable.lock,
-                            labelResId = R.string.privacy,
-                            url = "https://archivetune.koiiverse.cloud/privacy",
-                        ),
+    private fun buildUiModel(): AboutUiModel =
+        AboutUiModel(
+            appNameResId = R.string.app_name,
+            versionName = BuildConfig.VERSION_NAME,
+            buildHash = currentBuildHash,
+            buildVariant = if (BuildConfig.DEBUG) DebugBuildBadge else BuildConfig.ARCHITECTURE.uppercase(),
+            primaryLinks =
+                AboutLinkCollection.of(
+                    AboutLinkUiModel(
+                        id = "github",
+                        iconResId = R.drawable.github,
+                        labelResId = R.string.about_content_desc_github,
+                        url = "https://github.com/bitmystic-dev",
                     ),
-                leadDeveloper =
+                    AboutLinkUiModel(
+                        id = "website",
+                        iconResId = R.drawable.website,
+                        labelResId = R.string.about_content_desc_website,
+                        url = "https://bitmystic-dev.github.io",
+                    ),
+                    AboutLinkUiModel(
+                        id = "telegram",
+                        iconResId = R.drawable.telegram,
+                        labelResId = R.string.about_content_desc_telegram,
+                        url = "https://github.com/bitmystic-dev",
+                    ),
+                    AboutLinkUiModel(
+                        id = "donate",
+                        iconResId = R.drawable.coffee,
+                        labelResId = R.string.about_content_desc_donate,
+                        url = "https://github.com/bitmystic-dev",
+                    ),
+                    AboutLinkUiModel(
+                        id = "discord",
+                        iconResId = R.drawable.discord,
+                        labelResId = R.string.discord,
+                        url = "https://github.com/bitmystic-dev",
+                    ),
+                    AboutLinkUiModel(
+                        id = "privacy_policy",
+                        iconResId = R.drawable.lock,
+                        labelResId = R.string.privacy,
+                        url = "https://github.com/bitmystic-dev",
+                    ),
+                ),
+            leadDeveloper =
+                TeamMember(
+                    avatarUrl = "https://avatars.githubusercontent.com/bitmystic-dev.png",
+                    name = "BitMystic",
+                    positionResId = R.string.about_position_lead_dev,
+                    profileUrl = "https://github.com/bitmystic-dev",
+                    links =
+                        AboutLinkCollection.of(
+                            AboutLinkUiModel(
+                                id = "github",
+                                iconResId = R.drawable.github,
+                                labelResId = R.string.about_content_desc_github,
+                                url = "https://github.com/bitmystic-dev",
+                            ),
+                            AboutLinkUiModel(
+                                id = "website",
+                                iconResId = R.drawable.website,
+                                labelResId = R.string.about_content_desc_website,
+                                url = "https://bitmystic-dev.github.io",
+                            ),
+                        ),
+                ),
+            collaborators =
+                TeamMemberCollection.of(
+                    TeamMember(
+                        avatarUrl = "https://avatars.githubusercontent.com/u/89002922?v=4",
+                        name = "Miko",
+                        positionResId = R.string.about_position_developers,
+                        profileUrl = "https://github.com/mikooochi",
+                        links =
+                            AboutLinkCollection.of(
+                                AboutLinkUiModel(
+                                    id = "github",
+                                    iconResId = R.drawable.github,
+                                    labelResId = R.string.about_content_desc_github,
+                                    url = "https://github.com/mikooochi",
+                                ),
+                            ),
+                    ),
+                    TeamMember(
+                        avatarUrl = "https://avatars.githubusercontent.com/u/195509093?v=4",
+                        name = "Shino",
+                        positionResId = R.string.about_position_developers,
+                        profileUrl = "https://github.com/shinonatsukii",
+                        links =
+                            AboutLinkCollection.of(
+                                AboutLinkUiModel(
+                                    id = "github",
+                                    iconResId = R.drawable.github,
+                                    labelResId = R.string.about_content_desc_github,
+                                    url = "https://github.com/shinonatsukii",
+                                ),
+                                AboutLinkUiModel(
+                                    id = "telegram",
+                                    iconResId = R.drawable.alternate_email,
+                                    labelResId = R.string.about_content_desc_telegram,
+                                    url = "https://t.me/shinonatsukii",
+                                ),
+                            ),
+                    ),
+                    TeamMember(
+                        avatarUrl = "https://avatars.githubusercontent.com/u/93458424?v=4",
+                        name = "WTTexe",
+                        positionResId = R.string.about_position_developers,
+                        profileUrl = "https://github.com/Windowstechtips",
+                        links =
+                            AboutLinkCollection.of(
+                                AboutLinkUiModel(
+                                    id = "github",
+                                    iconResId = R.drawable.github,
+                                    labelResId = R.string.about_content_desc_github,
+                                    url = "https://github.com/Windowstechtips",
+                                ),
+                                AboutLinkUiModel(
+                                    id = "discord",
+                                    iconResId = R.drawable.alternate_email,
+                                    labelResId = R.string.about_content_desc_discord,
+                                    url = "https://discord.com/users/840839409640800258",
+                                ),
+                            ),
+                    ),
+                    TeamMember(
+                        avatarUrl = "https://avatars.githubusercontent.com/u/203143605?v=4",
+                        name = "Yuki/Reze",
+                        positionResId = R.string.about_position_yuki,
+                        profileUrl = "https://github.com/4nx3b",
+                        links =
+                            AboutLinkCollection.of(
+                                AboutLinkUiModel(
+                                    id = "github",
+                                    iconResId = R.drawable.github,
+                                    labelResId = R.string.about_content_desc_github,
+                                    url = "https://github.com/4nx3b",
+                                ),
+                            ),
+                    ),
+                ),
+            respecters =
+                TeamMemberCollection.of(
+                    TeamMember(
+                        avatarUrl = "https://avatars.githubusercontent.com/u/80542861?v=4",
+                        name = "MO AGAMY",
+                        positionResId = R.string.about_position_mo_agamy,
+                        profileUrl = "https://github.com/mostafaalagamy",
+                        links =
+                            AboutLinkCollection.of(
+                                AboutLinkUiModel(
+                                    id = "github",
+                                    iconResId = R.drawable.github,
+                                    labelResId = R.string.about_content_desc_github,
+                                    url = "https://github.com/mostafaalagamy",
+                                ),
+                            ),
+                    ),
                     TeamMember(
                         avatarUrl = "https://avatars.githubusercontent.com/u/107134739?v=4",
-                        name = "morieattonkatsu",
-                        positionResId = R.string.about_position_lead_dev,
+                        name = "Rukamori",
+                        positionResId = R.string.about_position_zion_huang,
                         profileUrl = "https://github.com/rukamori",
                         links =
                             AboutLinkCollection.of(
@@ -463,182 +576,63 @@ class AboutViewModel
                                     labelResId = R.string.about_content_desc_github,
                                     url = "https://github.com/rukamori",
                                 ),
-                                AboutLinkUiModel(
-                                    id = "website",
-                                    iconResId = R.drawable.website,
-                                    labelResId = R.string.about_content_desc_website,
-                                    url = "https://koiiverse.cloud",
-                                ),
-                                AboutLinkUiModel(
-                                    id = "discord",
-                                    iconResId = R.drawable.alternate_email,
-                                    labelResId = R.string.about_content_desc_discord,
-                                    url = "https://discord.com/users/886971572668219392",
-                                ),
                             ),
                     ),
-                collaborators =
-                    TeamMemberCollection.of(
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/89002922?v=4",
-                            name = "Miko",
-                            positionResId = R.string.about_position_developers,
-                            profileUrl = "https://github.com/mikooochi",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/mikooochi",
-                                    ),
-                                ),
-                        ),
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/195509093?v=4",
-                            name = "Shino",
-                            positionResId = R.string.about_position_developers,
-                            profileUrl = "https://github.com/shinonatsukii",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/shinonatsukii",
-                                    ),
-                                    AboutLinkUiModel(
-                                        id = "telegram",
-                                        iconResId = R.drawable.alternate_email,
-                                        labelResId = R.string.about_content_desc_telegram,
-                                        url = "https://t.me/shinonatsukii",
-                                    ),
-                                ),
-                        ),
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/93458424?v=4",
-                            name = "WTTexe",
-                            positionResId = R.string.about_position_developers,
-                            profileUrl = "https://github.com/Windowstechtips",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/Windowstechtips",
-                                    ),
-                                    AboutLinkUiModel(
-                                        id = "discord",
-                                        iconResId = R.drawable.alternate_email,
-                                        labelResId = R.string.about_content_desc_discord,
-                                        url = "https://discord.com/users/840839409640800258",
-                                    ),
-                                ),
-                        ),
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/203143605?v=4",
-                            name = "Yuki/Reze",
-                            positionResId = R.string.about_position_yuki,
-                            profileUrl = "https://github.com/4nx3b",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/4nx3b",
-                                    ),
-                                ),
-                        ),
-                    ),
-                respecters =
-                    TeamMemberCollection.of(
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/80542861?v=4",
-                            name = "MO AGAMY",
-                            positionResId = R.string.about_position_mo_agamy,
-                            profileUrl = "https://github.com/mostafaalagamy",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/mostafaalagamy",
-                                    ),
-                                ),
-                        ),
-                        TeamMember(
-                            avatarUrl = "https://avatars.githubusercontent.com/u/110614797?v=4",
-                            name = "Zion Huang",
-                            positionResId = R.string.about_position_zion_huang,
-                            profileUrl = "https://github.com/z-huang",
-                            links =
-                                AboutLinkCollection.of(
-                                    AboutLinkUiModel(
-                                        id = "github",
-                                        iconResId = R.drawable.github,
-                                        labelResId = R.string.about_content_desc_github,
-                                        url = "https://github.com/z-huang",
-                                    ),
-                                ),
-                        ),
-                    ),
-                contributorsState = contributorsState,
-                contributorsReadMoreUrl = ContributorsReadMoreUrl,
-                activeDialog = activeDialog,
-                translationContributorsState = translationContributorsState,
-                dependencyLicensesState = dependencyLicensesState,
-            )
+                ),
+            contributorsState = contributorsState,
+            contributorsReadMoreUrl = ContributorsReadMoreUrl,
+            activeDialog = activeDialog,
+            translationContributorsState = translationContributorsState,
+            dependencyLicensesState = dependencyLicensesState,
+        )
 
-        private fun AboutContributorCollection.toUiCollection(): AboutContributorUiCollection {
-            val contributors = ArrayList<AboutContributorUiModel>(MaxDisplayedContributors)
-            forEach { contributor ->
-                contributors.add(contributor.toUiModel())
-            }
-            return AboutContributorUiCollection.from(contributors)
+    private fun AboutContributorCollection.toUiCollection(): AboutContributorUiCollection {
+        val contributors = ArrayList<AboutContributorUiModel>(MaxDisplayedContributors)
+        forEach { contributor ->
+            contributors.add(contributor.toUiModel())
         }
-
-        private fun AboutContributor.toUiModel(): AboutContributorUiModel =
-            AboutContributorUiModel(
-                login = login,
-                avatarUrl = avatarUrl,
-                profileUrl = profileUrl,
-            )
-
-        private fun AboutTranslationContributorCollection.toUiCollection(): AboutTranslationContributorUiCollection {
-            val contributors = ArrayList<AboutTranslationContributorUiModel>(size)
-            for (index in 0 until size) {
-                contributors.add(this[index].toUiModel())
-            }
-            return AboutTranslationContributorUiCollection.from(contributors)
-        }
-
-        private fun AboutTranslationContributor.toUiModel(): AboutTranslationContributorUiModel =
-            AboutTranslationContributorUiModel(
-                language = language,
-                contributors = contributors.joinToString().takeIf(String::isNotBlank),
-            )
-
-        private fun AboutDependencyLicenseCollection.toUiCollection(): AboutDependencyLicenseUiCollection {
-            val licenses = ArrayList<AboutDependencyLicenseUiModel>(size)
-            for (index in 0 until size) {
-                licenses.add(this[index].toUiModel())
-            }
-            return AboutDependencyLicenseUiCollection.from(licenses)
-        }
-
-        private fun AboutDependencyLicense.toUiModel(): AboutDependencyLicenseUiModel =
-            AboutDependencyLicenseUiModel(
-                name = name,
-                version = version,
-                licenses = licenses,
-            )
-
-        private companion object {
-            const val MaxDisplayedContributors = 20
-            const val DebugBuildBadge = "DEBUG"
-            const val ContributorsReadMoreUrl = "https://github.com/rukamori/ArchiveTune/graphs/contributors"
-        }
+        return AboutContributorUiCollection.from(contributors)
     }
+
+    private fun AboutContributor.toUiModel(): AboutContributorUiModel =
+        AboutContributorUiModel(
+            login = login,
+            avatarUrl = avatarUrl,
+            profileUrl = profileUrl,
+        )
+
+    private fun AboutTranslationContributorCollection.toUiCollection(): AboutTranslationContributorUiCollection {
+        val contributors = ArrayList<AboutTranslationContributorUiModel>(size)
+        for (index in 0 until size) {
+            contributors.add(this[index].toUiModel())
+        }
+        return AboutTranslationContributorUiCollection.from(contributors)
+    }
+
+    private fun AboutTranslationContributor.toUiModel(): AboutTranslationContributorUiModel =
+        AboutTranslationContributorUiModel(
+            language = language,
+            contributors = contributors.joinToString().takeIf(String::isNotBlank),
+        )
+
+    private fun AboutDependencyLicenseCollection.toUiCollection(): AboutDependencyLicenseUiCollection {
+        val licenses = ArrayList<AboutDependencyLicenseUiModel>(size)
+        for (index in 0 until size) {
+            licenses.add(this[index].toUiModel())
+        }
+        return AboutDependencyLicenseUiCollection.from(licenses)
+    }
+
+    private fun AboutDependencyLicense.toUiModel(): AboutDependencyLicenseUiModel =
+        AboutDependencyLicenseUiModel(
+            name = name,
+            version = version,
+            licenses = licenses,
+        )
+
+    private companion object {
+        const val MaxDisplayedContributors = 20
+        const val DebugBuildBadge = "DEBUG"
+        const val ContributorsReadMoreUrl = "https://github.com/bitmystic-dev/Orynth-Music/graphs/contributors"
+    }
+}
